@@ -1,0 +1,236 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* MAPA */
+#map {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* PANEL */
+.panel-header {
+  position: sticky;
+  top: 0;
+  z-index: 1200;
+  background: #5a141f;
+}
+/* PANEL – EFECTO VIDRIO */
+.panel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 320px;
+  height: 100%;
+  z-index: 1000;
+
+  /* Glassmorphism */
+  background: rgba(90, 20, 31, 0.55);     /* color base translúcido */
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+}
+
+
+.panel.oculto {
+  transform: translateX(-100%);
+}
+/* BOTÓN */
+.btn-panel {
+  position: absolute;
+  top: 15px;
+  left: 320px;              
+  z-index: 2000;
+  background: #9D2449;
+  color: white;
+  border: none;
+  padding: 10px 12px;
+  font-size: 18px;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  transition: left 0.3s ease;
+}
+.btn-panel:hover {
+  background: #b5395d;
+}
+/* Cuando el panel está oculto */
+.panel.oculto + .btn-panel {
+  left: 0px;             
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.15),
+    rgba(255,255,255,0.05),
+    rgba(255,255,255,0)
+  );
+
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.panel:hover::before {
+  opacity: 1;
+}
+
+
+/* TÍTULO */
+
+.titulo {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  margin: 0;
+  padding: 14px;
+  font-size: 26px;
+  color: #ffffff;
+
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+
+
+/* BLOQUES */
+.bloque {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.bloque h4 {
+  background: rgba(255, 255, 255, 0.25);
+  color: #000;
+  backdrop-filter: blur(6px);
+}
+
+
+
+.item input[type="checkbox"] {
+  accent-color: #19d313; 
+}
+
+/* Checkbox personalizado */
+.item input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #f8f8f8;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  margin-right: 6px;
+  background-color: #ffffff; /* color del check al apagar */
+}
+
+/* Color cuando está activo */
+.item input[type="checkbox"]:checked {
+  background-color: #c71d34; /* color del check al encender */
+  border-color: #f8f7f7;
+}
+
+.item input[type="checkbox"]:checked::after {
+  content: '✔';
+  position: absolute;
+  top: -1px;
+  left: 2px;
+  font-size: 14px;
+  color: white;
+}
+
+/* Color de las palabras de los proyectos */
+
+/* TEXTO NORMAL */
+.item span {
+  color: #ffffff;
+  transition: color 0.2s ease;
+}
+
+/* HOVER */
+.item span:hover {
+  color: #ffe082; /* dorado suave */
+}
+
+/* CUANDO SE HACE CLICK */
+.item span:active {
+  color: #ff9800; /* ← color al presionar */
+}
+.boton-fijo {
+  position: sticky;
+  top: 64px; /* justo debajo del título */
+  z-index: 9;
+
+  margin: 10px;
+  padding: 10px;
+  width: calc(100% - 20px);
+
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 8px;
+
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+/* Botón centrar mapa */
+.btn-centro {
+  position: absolute;
+  top: 65px; /* justo debajo del botón de panel */
+  left: 320px; /* ancho del panel */
+  z-index: 2000;
+  background: #9D2449;
+  border: none;
+  padding: 8px;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  transition: left 0.3s ease;
+}
+
+.btn-centro img {
+  display: block;
+}
+
+.btn-centro:hover {
+  background: #b5395d;
+}
+
+/* Cuando el panel está oculto, mueve el botón */
+.panel.oculto ~ .btn-centro {
+  left: 0px;
+}
+/* CSS */
+.popup-hover {
+  min-width: 180px;       /* ancho mínimo para que se vea el botón */
+  max-width: 250px;       /* evita que se salga del popup */
+  font-size: 14px;
+}
+.popup-contenido button.btn-direcciones {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 4px 6px;
+  font-size: 13px;
+  background: #9D2449;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.popup-contenido button.btn-direcciones:hover {
+  background: #b5395d;
+}
