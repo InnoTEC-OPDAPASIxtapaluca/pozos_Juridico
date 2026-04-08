@@ -48,7 +48,7 @@ function obtenerIcono(nombreIcono) {
 const layersConPopupAbierto = [];
 
 const lista = document.getElementById("lista");
-const capas = {}; // Apartado -> Bloque -> LayerGroup
+const capas = {}; // Apartado -> Bloque -> NomCort -> LayerGroup
 const capasGlobales = []; // Todos los layers individuales
 const controlesApartados = {}; // Botones de cada apartado
 
@@ -139,6 +139,7 @@ Papa.parse("datos.csv", {
       const wkt = row.WKT?.trim();
       const apartado = row.Apartado?.trim() || "Otros";
       const bloque = row.Bloque?.trim() || "Sin bloque";
+      const NomCort = row.NomCort?.trim() || "Sin nombre corto";
       const nombreIcono = row.Icono?.trim() || "default";
 
       if (!wkt) return;
@@ -146,8 +147,9 @@ Papa.parse("datos.csv", {
       if (!geom) return;
 
       if (!capas[apartado]) capas[apartado] = {};
-      if (!capas[apartado][bloque])
-        capas[apartado][bloque] = L.layerGroup().addTo(map);
+if (!capas[apartado][bloque]) capas[apartado][bloque] = {};
+if (!capas[apartado][bloque][NomCort])
+  capas[apartado][bloque][NomCort] = L.layerGroup().addTo(map);
 
       let layer;
       if (geom.type === "POINT") {
@@ -184,7 +186,7 @@ Papa.parse("datos.csv", {
 
       if (layer) {
         aplicarHover(layer, row); //
-        layer.addTo(capas[apartado][bloque]);
+        layer.addTo(capas[apartado][bloque][NomCort]);
         capasGlobales.push(layer);
       }
     });
@@ -303,7 +305,6 @@ function abrirGoogleMaps(lat, lng) {
 function construirLista() {
   lista.innerHTML = "";
 
-  // Crear los apartados
   Object.keys(capas).forEach((apartado) => {
     const divApartado = document.createElement("div");
     divApartado.className = "bloque";
@@ -312,104 +313,109 @@ function construirLista() {
     hApartado.textContent = apartado;
     divApartado.appendChild(hApartado);
 
-    // Botón apagar/encender todo del apartado
+    // 🔘 BOTÓN APARTADO
     const btnApartado = document.createElement("button");
     btnApartado.textContent = "Apagar todo";
     btnApartado.style.margin = "5px";
-    btnApartado.style.cursor = "pointer";
     divApartado.appendChild(btnApartado);
 
-    controlesApartados[apartado] = btnApartado;
-
     btnApartado.addEventListener("click", () => {
-      const apagar =
-        btnApartado.textContent === "Apagar todo";
-      Object.keys(capas[apartado]).forEach((bloque) => {
-        const grupo = capas[apartado][bloque];
-        const divItem = Array.from(
-          divApartado.querySelectorAll(".item"),
-        ).find(
-          (d) =>
-            d.querySelector("span").textContent === bloque,
-        );
-        const chk = divItem.querySelector("input");
+      const apagar = btnApartado.textContent === "Apagar todo";
 
-        if (apagar) {
-          map.removeLayer(grupo);
-          chk.checked = false;
-        } else {
-          grupo.addTo(map);
-          chk.checked = true;
-        }
+      Object.keys(capas[apartado]).forEach((bloque) => {
+        Object.keys(capas[apartado][bloque]).forEach((sub) => {
+          const grupo = capas[apartado][bloque][sub];
+
+          if (apagar) {
+            map.removeLayer(grupo);
+          } else {
+            grupo.addTo(map);
+          }
+        });
       });
+
+      // actualizar checkboxes
+      divApartado.querySelectorAll("input").forEach((chk) => {
+        chk.checked = !apagar;
+      });
+
       btnApartado.textContent = apagar
         ? "Encender todo"
         : "Apagar todo";
     });
 
-    // Bloques individuales
+    // 🔽 BLOQUES
     Object.keys(capas[apartado]).forEach((bloque) => {
       const divBloque = document.createElement("div");
       divBloque.className = "item";
 
-      const chk = document.createElement("input");
-      chk.type = "checkbox";
-      chk.checked = true;
-      chk.addEventListener("change", () => {
-        const grupo = capas[apartado][bloque];
-        chk.checked
-          ? grupo.addTo(map)
-          : map.removeLayer(grupo);
-      });
+      const labelBloque = document.createElement("span");
+      labelBloque.textContent = bloque;
+      labelBloque.style.fontWeight = "bold";
 
-      const label = document.createElement("span");
-      label.textContent = bloque;
-      label.style.cursor = "pointer";
-      label.style.fontWeight = "bold";
+      divBloque.appendChild(labelBloque);
 
-      label.addEventListener("click", () => {
-        const grupo = capas[apartado][bloque];
-        const features = [];
-        grupo.eachLayer((layer) => features.push(layer));
+      // 🔽 SUBLISTA
+      const subLista = document.createElement("div");
+      subLista.style.marginLeft = "15px";
 
-        if (!features.length) return;
+      Object.keys(capas[apartado][bloque]).forEach((sub) => {
+        const grupo = capas[apartado][bloque][sub];
 
-        // 🔹 Encender el bloque si estaba apagado
-        if (!map.hasLayer(grupo)) {
-          grupo.addTo(map);
-          chk.checked = true;
-        }
+        const divSub = document.createElement("div");
+        divSub.className = "item";
 
-        // Zoom al grupo
-        const fg = L.featureGroup(features);
-        const bounds = fg.getBounds();
-        if (bounds.isValid()) {
-          map.fitBounds(bounds, {
+        const chk = document.createElement("input");
+        chk.type = "checkbox";
+        chk.checked = true;
+
+        chk.addEventListener("change", () => {
+          chk.checked
+            ? grupo.addTo(map)
+            : map.removeLayer(grupo);
+        });
+
+        const label = document.createElement("span");
+        label.textContent = sub;
+        label.style.cursor = "pointer";
+
+        // 🎯 CLICK → ZOOM + POPUP
+        label.addEventListener("click", () => {
+          const features = [];
+          grupo.eachLayer((layer) => features.push(layer));
+
+          if (!features.length) return;
+
+          if (!map.hasLayer(grupo)) {
+            grupo.addTo(map);
+            chk.checked = true;
+          }
+
+          const fg = L.featureGroup(features);
+          map.fitBounds(fg.getBounds(), {
             padding: [40, 40],
             maxZoom: 17,
           });
-        }
 
-        const primerLayer = features[0];
-        if (primerLayer.abrirTemporal) {
-          primerLayer.abrirTemporal(); // popup temporal sin fijarse
-        }
+          if (features[0].abrirTemporal) {
+            features[0].abrirTemporal();
+          }
 
-        // 📱 OCULTAR PANEL Y MANTENER BOTÓN FUNCIONAL
-        if (window.innerWidth <= 768) {
-          cerrarPanel();
-        }
+          if (window.innerWidth <= 768) cerrarPanel();
+        });
+
+        divSub.appendChild(chk);
+        divSub.appendChild(label);
+        subLista.appendChild(divSub);
       });
 
-      divBloque.appendChild(chk);
-      divBloque.appendChild(label);
+      divBloque.appendChild(subLista);
       divApartado.appendChild(divBloque);
     });
 
     lista.appendChild(divApartado);
   });
 }
-
 // ============================
 // BOTÓN GENERAL (HTML)
 // ============================
