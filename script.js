@@ -458,7 +458,7 @@ function zoomAutomatico() {
 // 🟦 Polígono del municipio de Ixtapaluca
 // ============================
 
-fetch("./data/poligono_ixtapaluca.json")
+fetch("poligono_ixtapaluca.json")
   .then((res) => res.json())
   .then((geojson) => {
     const poligonoIxtapaluca = L.geoJSON(geojson, {
